@@ -48,9 +48,17 @@ pub fn connect() !std.net.Stream {
 
 pub fn sendStartup(stream: std.net.Stream, allocator: std.mem.Allocator, username: []const u8, database: []const u8) !void {
     const proto_v: u32 = 196608;
+    var params_list = try allocator.alloc([]const u8, 4);
+    defer allocator.free(params_list);
+
+    params_list[0] = "user";
+    params_list[1] = username;
+    params_list[2] = "database";
+    params_list[3] = database;
+
     const params = StartupMessage{
         .protocol_version = proto_v,
-        .parameters = [][]const u8{ "user", username, "database", database },
+        .parameters = params_list,
         .allocator = allocator,
     };
     const buffer = try params.format();
