@@ -19,8 +19,9 @@ pub const ResponseHandler = struct {
 
                 var pw_buffer: [256]u8 = undefined;
                 const pw = try std.io.getStdIn().reader().readUntilDelimiter(&pw_buffer, '\n');
-                const total_length = 1 + 4 + pw.len + 1;
-                const msg_length = 4 + pw.len + 1;
+                const len_pw = std.math.cast(u32, pw.len) orelse return error.PWTooLong;
+                const total_length = 1 + 4 + len_pw + 1;
+                const msg_length = 4 + len_pw + 1;
 
                 var password_message = try allocator.alloc(u8, total_length);
                 defer allocator.free(password_message);
@@ -30,7 +31,7 @@ pub const ResponseHandler = struct {
                 @memcpy(password_message[5 .. 5 + pw.len], pw);
                 password_message[total_length - 1] = 0;
 
-                try stream.write(password_message);
+                _ = try stream.write(password_message);
             },
             else => return error.UnsupportedAuthMethod,
         }

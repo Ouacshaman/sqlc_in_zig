@@ -1,4 +1,5 @@
 const std = @import("std");
+const Response = @import("pg_proto_response.zig");
 
 const StartupMessage = struct {
     protocol_version: u32,
@@ -54,4 +55,5 @@ pub fn sendStartup(stream: std.net.Stream, allocator: std.mem.Allocator, usernam
     defer params.deinit(buffer);
 
     _ = try stream.write(buffer);
+    try Response.ResponseHandler.handlerAuth(buffer, stream, allocator);
 }

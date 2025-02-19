@@ -3,7 +3,6 @@ const db = @import("database.zig");
 const connect = @import("connect.zig");
 const Startup = @import("pg_proto_startup.zig");
 const Query = @import("pg_proto_query.zig");
-const Response = @import("pg_proto_response.zig");
 
 pub fn main() !void {
     const args = std.os.argv;
