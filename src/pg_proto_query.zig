@@ -31,3 +31,13 @@ const QueryMessage = struct {
     }
 };
 
+pub fn sendQuery(stream: std.net.Stream, allocator: std.mem.Allocator, query: []const u8) !void {
+    if (query.len == 0) return error.QueryEmpty;
+
+    const query_message = QueryMessage{
+        .query_string = query,
+        .allocator = allocator,
+    };
+
+    try query_message.sendQuery(stream);
+}
