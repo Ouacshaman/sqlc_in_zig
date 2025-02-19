@@ -45,3 +45,23 @@ pub const ResponseHandler = struct {
         std.debug.print("{s}", .{buffer});
     }
 };
+
+pub fn readAuthResponse(stream: std.net.Stream, allocator: std.mem.Allocator) ![]u8 {
+    var header_buf: [5]u8 = undefined;
+    _ = try stream.read(header_buf[0..]);
+
+    if (header_buf[0] != 'R') {
+        return error.NotAuthMessage;
+    }
+
+    const msg_len = std.mem.readInt(u32, header_buf[1..5], .big);
+
+    var buffer = try allocator.alloc(u8, msg_len + 1);
+    errdefer allocator.free(buffer);
+
+    @memcpy(buffer[0..5], &header_buf);
+
+    _ = try stream.read(buffer[5..]);
+
+    return buffer;
+}
