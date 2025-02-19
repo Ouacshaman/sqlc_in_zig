@@ -6,7 +6,7 @@ const StartupMessage = struct {
     allocator: std.mem.Allocator,
 
     pub fn format(self: StartupMessage) ![]u8 {
-        var size: usize = 4;
+        var size: usize = 8;
         for (self.parameters) |param| {
             size += param.len + 1;
         }
@@ -28,7 +28,7 @@ const StartupMessage = struct {
         return buffer;
     }
 
-    pub fn deinit(self: *StartupMessage, buffer: []u8) void {
+    pub fn deinit(self: StartupMessage, buffer: []u8) void {
         self.allocator.free(buffer);
     }
 };
@@ -53,5 +53,5 @@ pub fn sendStartup(stream: std.net.Stream, allocator: std.mem.Allocator, usernam
     const buffer = try params.format();
     defer params.deinit(buffer);
 
-    try stream.write(buffer);
+    _ = try stream.write(buffer);
 }
