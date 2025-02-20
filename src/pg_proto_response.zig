@@ -36,6 +36,44 @@ pub const ResponseHandler = struct {
             else => return error.UnsupportedAuthMethod,
         }
     }
+    //S
+    pub fn handleParameterStatus(buffer: []const u8) !void {
+        var offset: usize = 5;
+
+        const param_name_end = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
+        const param_name = buffer[offset .. offset + param_name_end];
+        std.debug.print("Parameter Name: {s}\n", .{param_name});
+
+        offset += param_name_end + 1;
+
+        const param_value_end = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
+        const param_value = buffer[offset .. offset + param_value_end];
+        std.debug.print("Parameter Value: {s}\n", .{param_value});
+    }
+    //K
+    pub fn handleBackendKeyData(buffer: []const u8) !void {
+        const process_id = buffer[5..9];
+        const secret_key = buffer[9..13];
+        std.debug.print("Process ID: {s}, Secret_key: {s}\n", .{ process_id, secret_key });
+    }
+    //Z
+    pub fn handleReadyForQuery(buffer: []const u8) !void {
+        const transaction_status = buffer[5];
+        switch (transaction_status) {
+            'I' => {
+                std.debug.print("{s}\n", .{"Idle"});
+            },
+            'T' => {
+                std.debug.print("{s}\n", .{"In Transaction"});
+            },
+            'E' => {
+                std.debug.print("{s}\n", .{"Failed Transaction"});
+            },
+            else => {
+                std.debug.print("Unknown: {c}\n", .{transaction_status});
+            },
+        }
+    }
     //T
     pub fn handlerRowDescription(buffer: []const u8) !void {
         const field_count = std.mem.readInt(u16, buffer[5..7], .big);
@@ -114,6 +152,15 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
         _ = try stream.read(buffer[5..]);
 
         switch (type_buf[0]) {
+            'S' => {
+                try ResponseHandler.handleParameterStatus(buffer);
+            },
+            'K' => {
+                try ResponseHandler.handleBackendKeyData(buffer);
+            },
+            'Z' => {
+                try ResponseHandler.handleReadyForQuery(buffer);
+            },
             'T' => {
                 try ResponseHandler.handlerRowDescription(buffer);
             },
