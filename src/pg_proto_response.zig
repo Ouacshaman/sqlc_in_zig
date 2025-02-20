@@ -38,11 +38,41 @@ pub const ResponseHandler = struct {
     }
     //T
     pub fn handlerRowDescription(buffer: []const u8) !void {
-        std.debug.print("{s}", .{buffer});
+        const field_count = std.mem.readInt(u16, buffer[5..7], .big);
+        std.debug.print("Number of fields: {d}\n", .{field_count});
+
+        var offset: usize = 7;
+        var i: usize = 0;
+        while (i < field_count) : (i += 1) {
+            // Finds null terminator for field name
+            const field_name_end = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
+            const field_name = buffer[offset .. offset + field_name_end];
+            std.debug.print("Field {d}: {s}\n", .{ i, field_name });
+
+            // Skip past other fields metadata
+            offset += field_name_end + 1 + 18; // 18 is the size of fixed-length field metadata
+        }
+        std.debug.print("\n", .{});
     }
     //D
     pub fn handlerDataRow(buffer: []const u8) !void {
-        std.debug.print("{s}", .{buffer});
+        const field_count = std.mem.readInt(u16, buffer[5..7], .big);
+        std.debug.print("Number of fields; {d}\n", .{field_count});
+
+        var offset: usize = 7;
+        var i: usize = 0;
+        while (i < field_count) : (i += 1) {
+            const field_length = std.mem.readInt(u32, @as(*const [4]u8, @ptrCast(buffer[offset .. offset + 4])), .big);
+            offset += 4;
+
+            if (field_length == 0xFFFFFFFF) {
+                std.debug.print("Field {d}: NULL\n", .{i});
+            } else {
+                const field_value = buffer[offset .. offset + field_length];
+                std.debug.print("Field {d}: {s}\n", .{ i, field_value });
+                offset += field_length;
+            }
+        }
     }
 };
 
@@ -64,4 +94,39 @@ pub fn readAuthResponse(stream: std.net.Stream, allocator: std.mem.Allocator) ![
     _ = try stream.read(buffer[5..]);
 
     return buffer;
+}
+
+pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
+    var type_buf: [1]u8 = undefined;
+    while (true) {
+        _ = try stream.read(type_buf[0..]);
+
+        var len_buf: [4]u8 = undefined;
+        _ = try stream.read(len_buf[0..]);
+        const msg_len = std.mem.readInt(u32, len_buf[0..4], .big);
+
+        var buffer = try allocator.alloc(u8, msg_len + 1);
+        defer allocator.free(buffer);
+
+        buffer[0] = type_buf[0];
+        @memcpy(buffer[1..5], &len_buf);
+
+        _ = try stream.read(buffer[5..]);
+
+        switch (type_buf[0]) {
+            'T' => {
+                try ResponseHandler.handlerRowDescription(buffer);
+            },
+            'D' => {
+                try ResponseHandler.handlerDataRow(buffer);
+            },
+            'C' => {
+                // Command complete
+                break;
+            },
+            else => {
+                std.debug.print("Unexpected message type: {c}\n", .{type_buf[0]});
+            },
+        }
+    }
 }

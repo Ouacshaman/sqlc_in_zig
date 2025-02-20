@@ -1,4 +1,5 @@
 const std = @import("std");
+const Response = @import("pg_proto_response.zig");
 
 const QueryMessage = struct {
     query_string: []const u8,
@@ -24,11 +25,12 @@ const QueryMessage = struct {
         self.allocator.free(buffer);
     }
 
-    pub fn sendQuery(self: QueryMessage, stream: std.net.Stream) !void {
+    pub fn sendQuery(self: QueryMessage, stream: std.net.Stream, allocator: std.mem.Allocator) !void {
         const buffer = try self.format();
         defer self.deinit(buffer);
 
         _ = try stream.write(buffer);
+        try Response.handleQuery(stream, allocator);
     }
 };
 
@@ -40,5 +42,5 @@ pub fn sendQuery(stream: std.net.Stream, allocator: std.mem.Allocator, query: []
         .allocator = allocator,
     };
 
-    try query_message.sendQuery(stream);
+    try query_message.sendQuery(stream, allocator);
 }
