@@ -74,6 +74,13 @@ pub const ResponseHandler = struct {
             },
         }
     }
+    //C
+    pub fn handleCommandComplete(buffer: []const u8) !void {
+        const offset: usize = 5;
+        const field_name_end = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
+        const command_tag = buffer[offset .. offset + field_name_end];
+        std.debug.print("Command Tag: {s}", .{command_tag});
+    }
     //T
     pub fn handlerRowDescription(buffer: []const u8) !void {
         const field_count = std.mem.readInt(u16, buffer[5..7], .big);
@@ -111,6 +118,20 @@ pub const ResponseHandler = struct {
                 offset += field_length;
             }
         }
+    }
+    //E
+    pub fn handlerErrorResponse(buffer: []const u8) !void {
+        const offset: usize = 5;
+        const end_of_error = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
+        const err = buffer[offset .. offset + end_of_error];
+        std.debug.print("Error: {s}", .{err});
+    }
+    //N
+    pub fn handlerNoticeResponse(buffer: []const u8) !void {
+        const offset: usize = 5;
+        const end_of_notice = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
+        const notice = buffer[offset .. offset + end_of_notice];
+        std.debug.print("Error: {s}", .{notice});
     }
 };
 
@@ -167,8 +188,14 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
             'D' => {
                 try ResponseHandler.handlerDataRow(buffer);
             },
+            'E' => {
+                try ResponseHandler.handlerErrorResponse(buffer);
+            },
+            'N' => {
+                try ResponseHandler.handlerNoticeResponse(buffer);
+            },
             'C' => {
-                // Command complete
+                try ResponseHandler.handleCommandComplete(buffer);
                 break;
             },
             else => {
