@@ -1,2 +1,3 @@
---
 SELECT * FROM users;
+SELECT 1;
+SELECT id FROM users;
