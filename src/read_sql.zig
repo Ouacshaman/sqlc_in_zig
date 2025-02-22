@@ -5,6 +5,21 @@ const QueryRes = struct {
     queries: [][]const u8,
 };
 
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    const out = try read(allocator);
+    defer allocator.free(out.content);
+    defer allocator.free(out.queries);
+
+    var i: usize = 0;
+    while (i < out.queries.len - 1) : (i += 1) {
+        std.debug.print("Lines: {s}\n", .{out.queries[i]});
+    }
+}
+
 pub fn read(allocator: std.mem.Allocator) !QueryRes {
     const file = try std.fs.cwd().readFileAlloc(allocator, "./src/database/queries.sql", 1024 * 1024);
     errdefer allocator.free(file);
