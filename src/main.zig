@@ -14,8 +14,12 @@ pub fn main() !void {
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
+    const localhost = "127.0.0.1";
+    const host = std.posix.getenv("HOST") orelse localhost;
+    const string_port = std.posix.getenv("PORT") orelse "5432";
+    const port = try std.fmt.parseInt(u16, string_port, 10);
 
-    const stream = try connect.connect("127.0.0.1", 5432);
+    const stream = try connect.connect(host, port);
     defer stream.close();
 
     try Startup.sendStartup(stream, allocator, args[1][0..std.mem.len(args[1])], args[2][0..std.mem.len(args[2])]);
