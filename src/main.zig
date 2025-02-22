@@ -7,6 +7,8 @@ const Json = @import("json.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    defer _ = gpa.detectLeaks();
     const allocator = gpa.allocator();
 
     const value = Json.readConfig(allocator) catch return error.UnableToReadJSON;
@@ -31,7 +33,6 @@ pub fn main() !void {
 
     std.debug.print("User: {s}, Database: {s}\n", .{ value.default_user, value.default_database });
 
-    // try Startup.sendStartup(stream, allocator, args[1][0..std.mem.len(args[1])], args[2][0..std.mem.len(args[2])]);
     try Startup.sendStartup(stream, allocator, value.default_user, value.default_database);
 
     try Query.sendQuery(stream, allocator, args[1][0..std.mem.len(args[1])]);
