@@ -19,7 +19,7 @@ pub fn readConfig(allocator: std.mem.Allocator) !Config {
 
     const home = env_map.get("HOME") orelse return empty;
 
-    const config_path = try std.fmt.allocPrint(arena_alloc, "{s}/.config/zig_cli/config.json", .{home});
+    const config_path = try std.fmt.allocPrint(arena_alloc, "{s}/.config/ziglc/config.json", .{home});
 
     const file = std.fs.openFileAbsolute(config_path, .{}) catch return empty;
     defer file.close();
