@@ -42,7 +42,10 @@ pub fn main() !void {
 
     if (std.mem.eql(u8, first_arg, "generate")) {
         var i: usize = 0;
-        while (i < multi_queries.queries.len - 1) : (i += 1) {
+        while (i < multi_queries.queries.len) : (i += 1) {
+            if (std.mem.startsWith(u8, multi_queries.queries[i], "--") or std.mem.eql(u8, multi_queries.queries[i], "")) {
+                continue;
+            }
             try Query.sendQuery(stream, allocator, multi_queries.queries[i]);
         }
     } else {

@@ -5,4 +5,4 @@ SELECT * FROM users;
 SELECT 1;
 
 -- name: GetUserIDs :many
-SELECT id FROM users;
+SELECT email FROM users;
