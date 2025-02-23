@@ -21,7 +21,7 @@ pub fn main() !void {
 }
 
 pub fn read(allocator: std.mem.Allocator) !QueryRes {
-    const file = try std.fs.cwd().readFileAlloc(allocator, "./src/database/queries.sql", 1024 * 1024);
+    const file = try std.fs.cwd().readFileAlloc(allocator, "./src/sql/queries/queries.sql", 1024 * 1024);
     errdefer allocator.free(file);
 
     var list = std.ArrayList([]const u8).init(allocator);
