@@ -27,11 +27,12 @@ pub fn read(allocator: std.mem.Allocator) !QueryRes {
     var list = std.ArrayList([]const u8).init(allocator);
     defer list.deinit(); // Only Free the List not the items, so no need to worry about seg faults
 
+    // This function splits the []u8 file into optional slice which is already []const u8 so no need to convert in while loop
     var split_string = std.mem.splitAny(u8, file, "\n");
 
     while (split_string.next()) |value| {
-        const converted: []const u8 = @as([]const u8, value);
-        try list.append(converted);
+        //const converted: []const u8 = @as([]const u8, value);
+        try list.append(value);
     }
 
     return QueryRes{
