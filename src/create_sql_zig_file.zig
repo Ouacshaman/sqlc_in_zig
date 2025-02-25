@@ -58,6 +58,7 @@ pub fn createSqlcZigFile() !void {
     }
 
     for (files) |file_name| {
+        // If string is not recognized at comptime use this to overcome
         const full_path = try std.fmt.allocPrint(allocator, "src/internal/database/{s}.zig", .{file_name});
         defer allocator.free(full_path);
         const file = try std.fs.cwd().createFile(full_path, .{});
