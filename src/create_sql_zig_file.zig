@@ -1,5 +1,6 @@
 const std = @import("std");
 const query = @import("pg_proto_query.zig");
+const readql = @import("read_sql.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -17,7 +18,8 @@ pub fn main() !void {
     try createSqlcZigFile();
 
     for (files) |file| {
-        std.debug.print("Filename: {s}", .{file});
+        try writeSqlcZig(file);
+        std.debug.print("Filename: {s}\n", .{file});
     }
 }
 
@@ -63,5 +65,29 @@ pub fn createSqlcZigFile() !void {
         defer allocator.free(full_path);
         const file = try std.fs.cwd().createFile(full_path, .{});
         defer file.close();
+    }
+}
+
+pub fn writeSqlcZig(file_name: []const u8) !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    std.debug.print("File Name: {s}\n", .{file_name});
+    const lines = try readql.read(allocator);
+    defer allocator.free(lines.content);
+    defer allocator.free(lines.queries);
+
+    const path = try std.fmt.allocPrint(allocator, "src/internal/database/{s}.zig", .{file_name});
+    defer allocator.free(path);
+    const file = try std.fs.cwd().openFile(path, .{ .mode = .read_write });
+    defer file.close();
+
+    for (lines.queries) |value| {
+        if (std.mem.startsWith(u8, value, "--")) {
+            const out = try std.fmt.allocPrint(allocator, "//{s}\n", .{value});
+            defer allocator.free(out);
+            _ = try file.writeAll(out);
+        }
     }
 }
