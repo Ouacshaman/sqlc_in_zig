@@ -14,6 +14,8 @@ pub fn main() !void {
         allocator.free(files);
     }
 
+    try createSqlcZigFile();
+
     for (files) |file| {
         std.debug.print("Filename: {s}", .{file});
     }
@@ -41,4 +43,24 @@ pub fn listFilesInSQLQueries(allocator: std.mem.Allocator) ![][]const u8 {
     }
 
     return try list.toOwnedSlice();
+}
+
+pub fn createSqlcZigFile() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+    const files = try listFilesInSQLQueries(allocator);
+    defer {
+        for (files) |file| {
+            allocator.free(file);
+        }
+        allocator.free(files);
+    }
+
+    for (files) |file_name| {
+        const full_path = try std.fmt.allocPrint(allocator, "src/internal/database/{s}.zig", .{file_name});
+        defer allocator.free(full_path);
+        const file = try std.fs.cwd().createFile(full_path, .{});
+        defer file.close();
+    }
 }
