@@ -93,6 +93,8 @@ pub fn writeSqlcZig(file_name: []const u8) !void {
             try list.appendSlice(out);
         }
     }
+
+    // toOwnedSlice creates a slice []const u8 here
     const joined = try list.toOwnedSlice();
     defer allocator.free(joined);
 

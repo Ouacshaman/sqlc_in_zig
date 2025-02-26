@@ -37,6 +37,7 @@ pub fn read(allocator: std.mem.Allocator) !QueryRes {
 
     return QueryRes{
         .content = @as([]const u8, file),
+        // toOwnedSlice create a slice of slices []const []const u8
         .queries = try list.toOwnedSlice(),
     };
 }
