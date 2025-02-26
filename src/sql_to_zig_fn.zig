@@ -83,11 +83,20 @@ pub fn writeSqlcZig(file_name: []const u8) !void {
     const file = try std.fs.cwd().openFile(path, .{ .mode = .read_write });
     defer file.close();
 
+    var list = std.ArrayList(u8).init(allocator);
+    defer list.deinit();
+
     for (lines.queries) |value| {
         if (std.mem.startsWith(u8, value, "--")) {
             const out = try std.fmt.allocPrint(allocator, "//{s}\n", .{value});
             defer allocator.free(out);
-            _ = try file.writeAll(out);
+            try list.appendSlice(out);
         }
     }
+    const joined = try list.toOwnedSlice();
+    defer allocator.free(joined);
+
+    std.debug.print("Joined: {s}", .{joined});
+
+    _ = try file.writeAll(joined);
 }
