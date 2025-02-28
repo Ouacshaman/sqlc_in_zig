@@ -89,9 +89,8 @@ pub fn writeSqlcZig(file_name: []const u8) !void {
 
     for (lines.queries) |value| {
         if (std.mem.startsWith(u8, value, "--")) {
-            const out = try std.fmt.allocPrint(allocator, "//{s}\n", .{value});
+            const out = try std.fmt.allocPrint(allocator, "//{s}", .{value});
             defer allocator.free(out);
-            try list.appendSlice(out);
             const func = try handler.createFn(out, "test", allocator);
             defer allocator.free(func);
             try list.appendSlice(func);
