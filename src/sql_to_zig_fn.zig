@@ -1,6 +1,7 @@
 const std = @import("std");
 const query = @import("pg_proto_query.zig");
 const readql = @import("read_sql.zig");
+const handler = @import("sql2fn_handler.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -91,6 +92,9 @@ pub fn writeSqlcZig(file_name: []const u8) !void {
             const out = try std.fmt.allocPrint(allocator, "//{s}\n", .{value});
             defer allocator.free(out);
             try list.appendSlice(out);
+            const func = try handler.createFn(out, "test", allocator);
+            defer allocator.free(func);
+            try list.appendSlice(func);
         }
     }
 
