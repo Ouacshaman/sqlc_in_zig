@@ -87,11 +87,18 @@ pub fn writeSqlcZig(file_name: []const u8) !void {
     var list = std.ArrayList(u8).init(allocator);
     defer list.deinit();
 
-    for (lines.queries) |value| {
-        if (std.mem.startsWith(u8, value, "--")) {
-            const out = try std.fmt.allocPrint(allocator, "//{s}", .{value});
+    const std_lib = "const std = @import(\"std\");\n";
+    const query_lib = "const query = @import(\"pg_proto_query.zig\");\n\n";
+
+    try list.appendSlice(std_lib);
+    try list.appendSlice(query_lib);
+
+    var i: usize = 0;
+    while (i < lines.queries.len) : (i += 1) {
+        if (std.mem.startsWith(u8, lines.queries[i], "--")) {
+            const out = try std.fmt.allocPrint(allocator, "//{s}", .{lines.queries[i]});
             defer allocator.free(out);
-            const func = try handler.createFn(out, "test", allocator);
+            const func = try handler.createFn(out, lines.queries[i + 1], allocator);
             defer allocator.free(func);
             try list.appendSlice(func);
         }
