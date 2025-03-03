@@ -167,11 +167,7 @@ pub fn readAuthResponse(stream: std.net.Stream, allocator: std.mem.Allocator) ![
 }
 
 pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) ![]const u8 {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const gpalloc = gpa.allocator();
-
-    var list = std.ArrayList(u8).init(gpalloc);
+    var list = std.ArrayList(u8).init(allocator);
     defer list.deinit();
     try list.appendSlice("\n---start---\n\n");
 
@@ -202,24 +198,24 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) ![]cons
                 try ResponseHandler.handleReadyForQuery(buffer);
             },
             'T' => {
-                const rd = try ResponseHandler.handlerRowDescription(buffer, gpalloc);
+                const rd = try ResponseHandler.handlerRowDescription(buffer, allocator);
                 defer {
                     for (rd) |item| {
-                        gpalloc.free(item);
+                        allocator.free(item);
                     }
-                    gpalloc.free(rd);
+                    allocator.free(rd);
                 }
                 for (rd) |item| {
                     try list.appendSlice(item);
                 }
             },
             'D' => {
-                const dr = try ResponseHandler.handlerDataRow(buffer, gpalloc);
+                const dr = try ResponseHandler.handlerDataRow(buffer, allocator);
                 defer {
                     for (dr) |item| {
-                        gpalloc.free(item);
+                        allocator.free(item);
                     }
-                    gpalloc.free(dr);
+                    allocator.free(dr);
                 }
                 for (dr) |item| {
                     try list.appendSlice(item);
@@ -242,9 +238,5 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) ![]cons
     }
     try list.appendSlice("\n---end---");
 
-    const joined = try list.toOwnedSlice();
-    defer gpalloc.free(joined);
-    const res = try allocator.dupe(u8, joined);
-
-    return res;
+    return try list.toOwnedSlice();
 }
