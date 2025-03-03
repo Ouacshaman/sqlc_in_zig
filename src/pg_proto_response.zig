@@ -82,12 +82,8 @@ pub const ResponseHandler = struct {
         std.debug.print("Command Tag: {s}", .{command_tag});
     }
     //T
-    pub fn handlerRowDescription(buffer: []const u8, allocator: std.mem.Allocator) ![]const u8 {
-        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-        defer _ = gpa.deinit();
-        const gpalloc = gpa.allocator();
-
-        var list = std.ArrayList(u8).init(gpalloc);
+    pub fn handlerRowDescription(buffer: []const u8, allocator: std.mem.Allocator) ![][]const u8 {
+        var list = std.ArrayList([]const u8).init(allocator);
         defer list.deinit();
 
         const field_count = std.mem.readInt(u16, buffer[5..7], .big);
@@ -100,26 +96,17 @@ pub const ResponseHandler = struct {
             const field_name_end = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
             const field_name = buffer[offset .. offset + field_name_end];
             std.debug.print("Field {d}: {s}\n", .{ i, field_name });
-            const temp = try std.fmt.allocPrint(gpalloc, "Field {d}: {s}\n", .{ i, field_name });
-            defer gpalloc.free(temp);
-            try list.appendSlice(temp);
+            const temp = try std.fmt.allocPrint(allocator, "Field {d}: {s}\n", .{ i, field_name });
+            try list.append(temp);
             // Skip past other fields metadata
             offset += field_name_end + 1 + 18; // 18 is the size of fixed-length field metadata
         }
         std.debug.print("\n", .{});
-        const joined = try list.toOwnedSlice();
-        defer gpalloc.free(joined);
-        const res = try allocator.dupe(u8, joined);
-
-        return res;
+        return try list.toOwnedSlice();
     }
     //D
-    pub fn handlerDataRow(buffer: []const u8, allocator: std.mem.Allocator) ![]const u8 {
-        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-        defer _ = gpa.deinit();
-        const gpalloc = gpa.allocator();
-
-        var list = std.ArrayList(u8).init(gpalloc);
+    pub fn handlerDataRow(buffer: []const u8, allocator: std.mem.Allocator) ![][]const u8 {
+        var list = std.ArrayList([]const u8).init(allocator);
         defer list.deinit();
 
         const field_count = std.mem.readInt(u16, buffer[5..7], .big);
@@ -136,17 +123,12 @@ pub const ResponseHandler = struct {
             } else {
                 const field_value = buffer[offset .. offset + field_length];
                 std.debug.print("Field {d}: {s}\n", .{ i, field_value });
-                const temp = try std.fmt.allocPrint(gpalloc, "Field {d}: {s}\n", .{ i, field_value });
-                defer gpalloc.free(temp);
-                try list.appendSlice(temp);
+                const temp = try std.fmt.allocPrint(allocator, "Field {d}: {s}\n", .{ i, field_value });
+                try list.append(temp);
                 offset += field_length;
             }
         }
-        const joined = try list.toOwnedSlice();
-        defer gpalloc.free(joined);
-        const res = try allocator.dupe(u8, joined);
-
-        return res;
+        return try list.toOwnedSlice();
     }
     //E
     pub fn handlerErrorResponse(buffer: []const u8) !void {
@@ -221,13 +203,27 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) ![]cons
             },
             'T' => {
                 const rd = try ResponseHandler.handlerRowDescription(buffer, gpalloc);
-                defer gpalloc.free(rd);
-                try list.appendSlice(rd);
+                defer {
+                    for (rd) |item| {
+                        gpalloc.free(item);
+                    }
+                    gpalloc.free(rd);
+                }
+                for (rd) |item| {
+                    try list.appendSlice(item);
+                }
             },
             'D' => {
                 const dr = try ResponseHandler.handlerDataRow(buffer, gpalloc);
-                defer gpalloc.free(dr);
-                try list.appendSlice(dr);
+                defer {
+                    for (dr) |item| {
+                        gpalloc.free(item);
+                    }
+                    gpalloc.free(dr);
+                }
+                for (dr) |item| {
+                    try list.appendSlice(item);
+                }
             },
             'E' => {
                 try ResponseHandler.handlerErrorResponse(buffer);
