@@ -173,7 +173,7 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) ![]cons
 
     var list = std.ArrayList(u8).init(gpalloc);
     defer list.deinit();
-    try list.appendSlice("---start---\n");
+    try list.appendSlice("\n---start---\n\n");
 
     var type_buf: [1]u8 = undefined;
     while (true) {
