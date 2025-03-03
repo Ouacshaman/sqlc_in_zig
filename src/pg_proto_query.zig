@@ -25,16 +25,16 @@ const QueryMessage = struct {
         self.allocator.free(buffer);
     }
 
-    pub fn sendQuery(self: QueryMessage, stream: std.net.Stream, allocator: std.mem.Allocator) !void {
+    pub fn sendQuery(self: QueryMessage, stream: std.net.Stream, allocator: std.mem.Allocator) ![]const u8 {
         const buffer = try self.format();
         defer self.deinit(buffer);
 
         _ = try stream.write(buffer);
-        try Response.handleQuery(stream, allocator);
+        return try Response.handleQuery(stream, allocator);
     }
 };
 
-pub fn sendQuery(stream: std.net.Stream, allocator: std.mem.Allocator, query: []const u8) !void {
+pub fn sendQuery(stream: std.net.Stream, allocator: std.mem.Allocator, query: []const u8) ![]const u8 {
     if (query.len == 0) return error.QueryEmpty;
 
     const query_message = QueryMessage{
@@ -42,5 +42,5 @@ pub fn sendQuery(stream: std.net.Stream, allocator: std.mem.Allocator, query: []
         .allocator = allocator,
     };
 
-    try query_message.sendQuery(stream, allocator);
+    return try query_message.sendQuery(stream, allocator);
 }

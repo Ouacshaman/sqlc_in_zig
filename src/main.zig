@@ -46,9 +46,13 @@ pub fn main() !void {
             if (std.mem.startsWith(u8, multi_queries.queries[i], "--") or std.mem.eql(u8, multi_queries.queries[i], "")) {
                 continue;
             }
-            try Query.sendQuery(stream, allocator, multi_queries.queries[i]);
+            const output_1 = try Query.sendQuery(stream, allocator, multi_queries.queries[i]);
+            defer allocator.free(output_1);
+            std.debug.print("Queries Response from SQL file: {s}\n", .{output_1});
         }
     } else {
-        try Query.sendQuery(stream, allocator, args[1][0..std.mem.len(args[1])]);
+        const single = try Query.sendQuery(stream, allocator, args[1][0..std.mem.len(args[1])]);
+        defer allocator.free(single);
+        std.debug.print("Singular Query Response: {s}\n", .{single});
     }
 }

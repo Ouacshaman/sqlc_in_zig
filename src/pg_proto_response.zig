@@ -82,7 +82,14 @@ pub const ResponseHandler = struct {
         std.debug.print("Command Tag: {s}", .{command_tag});
     }
     //T
-    pub fn handlerRowDescription(buffer: []const u8) !void {
+    pub fn handlerRowDescription(buffer: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        defer _ = gpa.deinit();
+        const gpalloc = gpa.allocator();
+
+        var list = std.ArrayList(u8).init(gpalloc);
+        defer list.deinit();
+
         const field_count = std.mem.readInt(u16, buffer[5..7], .big);
         std.debug.print("Number of fields: {d}\n", .{field_count});
 
@@ -93,14 +100,28 @@ pub const ResponseHandler = struct {
             const field_name_end = std.mem.indexOfScalar(u8, buffer[offset..], 0) orelse return error.MalformedMessage;
             const field_name = buffer[offset .. offset + field_name_end];
             std.debug.print("Field {d}: {s}\n", .{ i, field_name });
-
+            const temp = try std.fmt.allocPrint(gpalloc, "Field {d}: {s}\n", .{ i, field_name });
+            defer gpalloc.free(temp);
+            try list.appendSlice(temp);
             // Skip past other fields metadata
             offset += field_name_end + 1 + 18; // 18 is the size of fixed-length field metadata
         }
         std.debug.print("\n", .{});
+        const joined = try list.toOwnedSlice();
+        defer gpalloc.free(joined);
+        const res = try allocator.dupe(u8, joined);
+
+        return res;
     }
     //D
-    pub fn handlerDataRow(buffer: []const u8) !void {
+    pub fn handlerDataRow(buffer: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        defer _ = gpa.deinit();
+        const gpalloc = gpa.allocator();
+
+        var list = std.ArrayList(u8).init(gpalloc);
+        defer list.deinit();
+
         const field_count = std.mem.readInt(u16, buffer[5..7], .big);
         std.debug.print("Number of fields; {d}\n", .{field_count});
 
@@ -115,9 +136,17 @@ pub const ResponseHandler = struct {
             } else {
                 const field_value = buffer[offset .. offset + field_length];
                 std.debug.print("Field {d}: {s}\n", .{ i, field_value });
+                const temp = try std.fmt.allocPrint(gpalloc, "Field {d}: {s}\n", .{ i, field_value });
+                defer gpalloc.free(temp);
+                try list.appendSlice(temp);
                 offset += field_length;
             }
         }
+        const joined = try list.toOwnedSlice();
+        defer gpalloc.free(joined);
+        const res = try allocator.dupe(u8, joined);
+
+        return res;
     }
     //E
     pub fn handlerErrorResponse(buffer: []const u8) !void {
@@ -155,7 +184,15 @@ pub fn readAuthResponse(stream: std.net.Stream, allocator: std.mem.Allocator) ![
     return buffer;
 }
 
-pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
+pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) ![]const u8 {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const gpalloc = gpa.allocator();
+
+    var list = std.ArrayList(u8).init(gpalloc);
+    defer list.deinit();
+    try list.appendSlice("---start---\n");
+
     var type_buf: [1]u8 = undefined;
     while (true) {
         _ = try stream.read(type_buf[0..]);
@@ -183,10 +220,14 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
                 try ResponseHandler.handleReadyForQuery(buffer);
             },
             'T' => {
-                try ResponseHandler.handlerRowDescription(buffer);
+                const rd = try ResponseHandler.handlerRowDescription(buffer, gpalloc);
+                defer gpalloc.free(rd);
+                try list.appendSlice(rd);
             },
             'D' => {
-                try ResponseHandler.handlerDataRow(buffer);
+                const dr = try ResponseHandler.handlerDataRow(buffer, gpalloc);
+                defer gpalloc.free(dr);
+                try list.appendSlice(dr);
             },
             'E' => {
                 try ResponseHandler.handlerErrorResponse(buffer);
@@ -203,4 +244,11 @@ pub fn handleQuery(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
             },
         }
     }
+    try list.appendSlice("\n---end---");
+
+    const joined = try list.toOwnedSlice();
+    defer gpalloc.free(joined);
+    const res = try allocator.dupe(u8, joined);
+
+    return res;
 }
