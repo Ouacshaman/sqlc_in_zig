@@ -5,12 +5,7 @@ const Query = @import("pg_proto_query.zig");
 const Json = @import("json.zig");
 const ReadQL = @import("read_sql.zig");
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    defer _ = gpa.detectLeaks();
-    const allocator = gpa.allocator();
-
+pub fn sqlcGen(allocator: std.mem.Allocator) !void {
     const value = Json.readConfig(allocator) catch return error.UnableToReadJSON;
     defer {
         allocator.free(value.default_user);
