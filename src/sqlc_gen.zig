@@ -6,7 +6,12 @@ const Json = @import("json.zig");
 const ReadQL = @import("read_sql.zig");
 const sqlcFn = @import("sql_to_zig_fn.zig");
 
-pub fn sqlcGen(allocator: std.mem.Allocator) !void {
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    defer _ = gpa.detectLeaks();
+    const allocator = gpa.allocator();
+
     const args = std.os.argv;
     if (args.len < 1) {
         std.debug.print("Usage: {s} <query>\n", .{args[0]});

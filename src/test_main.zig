@@ -1,5 +1,4 @@
 const std = @import("std");
-const sqlc = @import("sqlc_gen.zig");
 const Startup = @import("pg_proto_startup.zig");
 const connect = @import("connect.zig");
 const Json = @import("json.zig");
@@ -26,8 +25,6 @@ pub fn main() !void {
     std.debug.print("User: {s}, Database: {s}\n", .{ value.default_user, value.default_database });
 
     try Startup.sendStartup(stream, allocator, value.default_user, value.default_database);
-
-    try sqlc.sqlcGen(allocator);
 
     const res = try queryZig.GetUsers(stream, allocator);
     defer allocator.free(res);
