@@ -88,7 +88,7 @@ pub fn writeSqlcZig(file_name: []const u8) !void {
     defer list.deinit();
 
     const std_lib = "const std = @import(\"std\");\n";
-    const query_lib = "const query = @import(\"pg_proto_query.zig\");\n\n";
+    const query_lib = "const query = @import(\"../../pg_proto_query.zig\");\n\n";
 
     try list.appendSlice(std_lib);
     try list.appendSlice(query_lib);
