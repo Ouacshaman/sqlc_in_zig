@@ -1,7 +1,6 @@
 const std = @import("std");
-const sqlc = @import("false_main.zig");
+const sqlc = @import("sqlc_gen.zig");
 const Startup = @import("pg_proto_startup.zig");
-
 const connect = @import("connect.zig");
 const Json = @import("json.zig");
 
@@ -27,5 +26,5 @@ pub fn main() !void {
 
     try Startup.sendStartup(stream, allocator, value.default_user, value.default_database);
 
-    try sqlc.sqlcGen(stream, allocator);
+    try sqlc.sqlcGen(allocator);
 }
