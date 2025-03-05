@@ -5,30 +5,13 @@ const Query = @import("pg_proto_query.zig");
 const Json = @import("json.zig");
 const ReadQL = @import("read_sql.zig");
 
-pub fn sqlcGen(allocator: std.mem.Allocator) !void {
-    const value = Json.readConfig(allocator) catch return error.UnableToReadJSON;
-    defer {
-        allocator.free(value.default_user);
-        allocator.free(value.default_database);
-        allocator.free(value.default_host);
-        allocator.free(value.default_port);
-    }
-
+pub fn sqlcGen(stream: std.net.Stream, allocator: std.mem.Allocator) !void {
     const args = std.os.argv;
 
     if (args.len < 1) {
         std.debug.print("Usage: {s} <query>\n", .{args[0]});
         return error.NoQuery;
     }
-
-    const port = try std.fmt.parseInt(u16, value.default_port, 10);
-
-    const stream = try connect.connect(value.default_host, port);
-    defer stream.close();
-
-    std.debug.print("User: {s}, Database: {s}\n", .{ value.default_user, value.default_database });
-
-    try Startup.sendStartup(stream, allocator, value.default_user, value.default_database);
 
     const first_arg = args[1][0..std.mem.len(args[1])];
     const multi_queries = try ReadQL.read(allocator);
