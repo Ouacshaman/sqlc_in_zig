@@ -1,4 +1,4 @@
-#SQLC in Zig
+# SQLC in Zig
 
 It is not exactly like SQLC as it is not rewritting the sqlc code, but its more like attempting to create it from scratch. This is lacking quite a lot of the features compared to the original. It does not create structs to be return in function, return list or single structs for queries, or does it differentiates between executions and other queries for getting data or inserting data. All this does is just generate the functions that calls postgress protocol function for processing query and return a string. Which you will do your own prefer parsing.
 
