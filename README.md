@@ -37,12 +37,11 @@ Then create your queries and place it in this directory:
 You can name it queries.sql to something else if you like
 
 Setup Database First:
-create it, connect to it, then setup tables( for me I use psql )
+create it, connect to it, then setup tables( for me I use psql)
 Then use the CLI to do inserts, selects, deletes, and updates
 
-Store information in ~/.config/ziglc/config.json
-Recommend to install goose for database migration
-If you are building a zig project store the queries in the ./src/sql/queries/ folders
+Create Directory and file to store information in "~/.config/ziglc/config.json"
+Recommend to install goose for database migration ( that is what I used)
 
 copy and  past this in main()
 
