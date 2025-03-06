@@ -1,8 +1,8 @@
--- name: GetUsers :many
+-- name: GetUsers :
 SELECT * FROM users;
 
--- name: GetOne :one
+-- name: GetOne :
 SELECT 1;
 
--- name: GetUserIDs :many
+-- name: GetUserIDs :
 SELECT email FROM users;
