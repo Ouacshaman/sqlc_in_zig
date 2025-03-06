@@ -4,22 +4,36 @@ It is not exactly like SQLC as it is not rewritting the sqlc code, but its more 
 
 clone this repo, then run "zig build" in the root directory to get the binary
 Then Copy the following into your SRC file:
-├──  connect.zig
-├──  json.zig
-├──  postgres_protocol
-│   ├──  pg_proto_query.zig
-│   ├──  pg_proto_response.zig
-│   └──  pg_proto_startup.zig
 
-Then make sure to setup:
-│   ├──  internal
-│   │   └──  database
+```plaintext
+├── connect.zig
+├── json.zig
+└── postgres_protocol/
+    ├── pg_proto_query.zig
+    ├── pg_proto_response.zig
+    └── pg_proto_startup.zig
+```
+
+Then make sure to setup this folder structure:
+
+```plaintext
+.
+|
+│   ├── internal/
+│   │   └── database/
+
+```
+
 Directory so that a zig function can be generated
 
 Then create your queries and place it in this directory:
-│   ├──  sql
-│   │   ├──  queries
-│   │   │   └──  queries.sql
+
+```plaintext
+│   └── sql/
+│       └── queries/
+│           └── queries.sql
+```
+
 You can name it queries.sql to something else if you like
 
 Setup Database First:
@@ -68,28 +82,30 @@ pub fn main() !void {
 ```
 
 these following files will be added to your src folder for zig:
-pg_proto_response.zig
-pg_proto_startup.zig
-pg_proto_query.zig
-json.zig -- unless you would like to mod
-connect.zig -- unless you would like to mod
 
- .
-├── 󱧼 src
-│   ├──  connect.zig
-│   ├──  internal
-│   │   └──  database
-│   ├──  json.zig
-│   ├──  main.zig
-│   ├──  postgres_protocol
-│   │   ├──  pg_proto_query.zig
-│   │   ├──  pg_proto_response.zig
-│   │   └──  pg_proto_startup.zig
-│   |
-│   ├──  sql
-│   │   ├──  queries
-│   │      └──  queries.sql
+1.pg_proto_response.zig 
+2.pg_proto_startup.zig
+3.pg_proto_query.zig
+4.json.zig -- unless you would like to mod
+5.connect.zig -- unless you would like to mod
 
+```plaintext
+.
+├── src/
+│   ├── connect.zig
+│   ├── internal/
+│   │   └── database/
+│   ├── json.zig
+│   ├── main.zig
+│   ├── postgres_protocol/
+│   │   ├── pg_proto_query.zig
+│   │   ├── pg_proto_response.zig
+│   │   └── pg_proto_startup.zig
+│   │
+│   └── sql/
+│       └── queries/
+│           └── queries.sql
+```
 
 Once you got this structure then in your root directory outside of the src durectory and run the the bindary.
 
