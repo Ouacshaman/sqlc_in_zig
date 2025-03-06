@@ -1,5 +1,5 @@
 const std = @import("std");
-const Startup = @import("pg_proto_startup.zig");
+const Startup = @import("postgres_protocol/pg_proto_startup.zig");
 const connect = @import("connect.zig");
 const Json = @import("json.zig");
 const queryZig = @import("internal/database/queries.sql.zig");
