@@ -80,7 +80,7 @@ pub fn main() !void {
 }
 ```
 
-these following files will be added to your src folder for zig:
+these following files will need to be added to your src folder for zig:
 
 1. pg_proto_response.zig 
 2. pg_proto_startup.zig
