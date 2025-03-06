@@ -82,11 +82,11 @@ pub fn main() !void {
 
 these following files will be added to your src folder for zig:
 
-1.pg_proto_response.zig 
-2.pg_proto_startup.zig
-3.pg_proto_query.zig
-4.json.zig -- unless you would like to mod
-5.connect.zig -- unless you would like to mod
+1. pg_proto_response.zig 
+2. pg_proto_startup.zig
+3. pg_proto_query.zig
+4. json.zig -- unless you would like to mod
+5. connect.zig -- unless you would like to mod
 
 ```plaintext
 .
