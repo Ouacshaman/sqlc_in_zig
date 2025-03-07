@@ -106,9 +106,9 @@ these following files will need to be added to your src folder for zig:
 │           └── queries.sql
 ```
 ### Important note: set up trusted local connections in your pg_hba.conf to Auth Errors
-I am using brew so you will have to go to /opt/homebrew/var/postgresql@16/ to get to the pg_hba.conf
+I am using brew so it might be different for you, If you are using brew go to /opt/homebrew/var/postgresql@16/ to access pg_hba.conf
 In the config you will need to set the connection method for auth to trust 
 
-Once you got this structure then in your root directory outside of the src durectory and run the the bindary.
+Once you got this structure then in your root directory outside of the src durectory and run the the binary.
 
 bootleg sqlc lol
