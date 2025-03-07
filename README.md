@@ -172,7 +172,7 @@ Modify the `pg_hba.conf` file accordingly.
 Once your project is set up, navigate to the **root directory** (outside of `src/`) and run the binary:
 
 ```sh
-./zig-out/bin/<binary-name>
+./zig-out/bin/zig_sqlc
 ```
 
 ---
