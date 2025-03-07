@@ -2,7 +2,7 @@ const std = @import("std");
 
 pub const ResponseHandler = struct {
     //R
-    pub fn handlerAuth(buffer: []const u8, stream: std.net.Stream, allocator: std.mem.Allocator) !void {
+    pub fn handlerAuth(buffer: []const u8) !void {
         if (buffer[0] != 'R') {
             return error.NotAuthMessage;
         }
@@ -14,26 +14,10 @@ pub const ResponseHandler = struct {
                 //AuthenticationOk
                 std.debug.print("Authentication Successful\n", .{});
             },
-            3 => {
-                std.debug.print("Password: ", .{});
-
-                var pw_buffer: [256]u8 = undefined;
-                const pw = try std.io.getStdIn().reader().readUntilDelimiter(&pw_buffer, '\n');
-                const len_pw = std.math.cast(u32, pw.len) orelse return error.PWTooLong;
-                const total_length = 1 + 4 + len_pw + 1;
-                const msg_length = 4 + len_pw + 1;
-
-                var password_message = try allocator.alloc(u8, total_length);
-                defer allocator.free(password_message);
-
-                password_message[0] = 'p';
-                std.mem.writeInt(u32, password_message[1..5], msg_length, .big);
-                @memcpy(password_message[5 .. 5 + pw.len], pw);
-                password_message[total_length - 1] = 0;
-
-                _ = try stream.write(password_message);
+            else => {
+                std.debug.print("Auth Type: {d}\n", .{auth_type});
+                return error.UnsupportedAuthMethod;
             },
-            else => return error.UnsupportedAuthMethod,
         }
     }
     //S

@@ -105,7 +105,7 @@ these following files will need to be added to your src folder for zig:
 │       └── queries/
 │           └── queries.sql
 ```
-
+## Important note: set up trusted local connections in your pg_hba.conf to avoid password prompt, this might only work for MacOs.
 Once you got this structure then in your root directory outside of the src durectory and run the the bindary.
 
 bootleg sqlc lol

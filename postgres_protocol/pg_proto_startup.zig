@@ -59,5 +59,5 @@ pub fn sendStartup(stream: std.net.Stream, allocator: std.mem.Allocator, usernam
     const auth_buffer = try Response.readAuthResponse(stream, allocator);
     defer allocator.free(auth_buffer);
 
-    try Response.ResponseHandler.handlerAuth(auth_buffer, stream, allocator);
+    try Response.ResponseHandler.handlerAuth(auth_buffer);
 }
