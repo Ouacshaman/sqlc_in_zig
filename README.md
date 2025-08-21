@@ -12,6 +12,8 @@ Instead, this tool **generates functions** that call PostgreSQL protocol functio
 
 ## 🚀 Getting Started
 
+## 🤝 Contributing
+
 ### 1️⃣ Clone the Repository
 ```sh
 git clone https://github.com/Ouacshaman/sqlc_in_zig.git
