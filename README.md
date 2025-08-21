@@ -13,6 +13,8 @@ Instead, this tool **generates functions** that call PostgreSQL protocol functio
 ## 🚀 Getting Started
 
 ## 🤝 Contributing
+I’d love your contributions! To get started, fork the repository and open a pull request. Please make sure your changes pass all existing tests and linting checks, and add new tests where applicable.
+All pull requests should target the main branch.
 
 ### 1️⃣ Clone the Repository
 ```sh
