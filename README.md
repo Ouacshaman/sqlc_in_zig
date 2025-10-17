@@ -5,6 +5,7 @@ This project is an attempt to create a SQLC-like tool in **Zig**, but rather tha
 - Struct generation for query results
 - Differentiation between execution queries and data retrieval
 - Automatic handling of query results (lists or single structs)
+- Currently supports Postgres
 
 Instead, this tool **generates functions** that call PostgreSQL protocol functions for processing queries and returning raw strings. You will need to handle your own parsing.
 
